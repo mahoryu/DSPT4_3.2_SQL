@@ -1,4 +1,4 @@
-
+# Module_2/Assignment/app/insert_titanic.py
 
 import os
 from dotenv import load_dotenv
@@ -28,19 +28,24 @@ for row in cursor.fetchall()[0:10]:
     print(row)
 
 
-
 #
 # CREATE THE TABLE
 #
 
-table_name = "test_table2"
+table_name = "titanic"
 
 print("-------------------")
 query = f"""
 CREATE TABLE IF NOT EXISTS {table_name} (
   id SERIAL PRIMARY KEY,
-  name varchar(40) NOT NULL,
-  data JSONB
+  Survived integer,
+  Pclass integer,
+  Name varchar NOT NULL,
+  Sex varchar NOT NULL,
+  Age float,
+  Siblings_Spouses_Aboard integer,
+  Parents_Children_Aboard integer,
+  Fare float
 );
 """
 print("SQL:", query)
@@ -50,42 +55,23 @@ cursor.execute(query)
 # INSERT SOME DATA
 #
 
-my_dict = { "a": 1, "b": ["dog", "cat", 42], "c": 'true' }
+HTML = "https://raw.githubusercontent.com/mahoryu/DS-Unit-3-Sprint-2-SQL-and-Databases/master/module2-sql-for-analysis/titanic.csv"
+df = pd.read_csv(HTML)
 
-#insertion_query = f"INSERT INTO {table_name} (name, data) VALUES (%s, %s)"
-#cursor.execute(insertion_query,
-#  ('A rowwwww', 'null')
-#)
-#cursor.execute(insertion_query,
-#  ('Another row, with JSONNNNN', json.dumps(my_dict))
-#)
+insertion_query = f"INSERT INTO {table_name} (Survived, Pclass, Name, Sex, Age, Siblings_Spouses_Aboard, Parents_Children_Aboard, Fare) VALUES %s"
 
-# h/t: https://stackoverflow.com/questions/8134602/psycopg2-insert-multiple-rows-with-one-query
-insertion_query = f"INSERT INTO {table_name} (name, data) VALUES %s"
-#execute_values(cursor, insertion_query, [
-#  ('A rowwwww', 'null'),
-#  ('Another row, with JSONNNNN', json.dumps(my_dict)),
-#  ('Third row', "3")
-#])
-
-df = pd.DataFrame([
-  ['A rowwwww', 'null'],
-  ['Another row, with JSONNNNN', json.dumps(my_dict)],
-  ['Third row', "null"],
-  ["Pandas Row", "null"]
-])
-
-records = df.to_dict("records") #> [{0: 'A rowwwww', 1: 'null'}, {0: 'Another row, with JSONNNNN', 1: '{"a": 1, "b": ["dog", "cat", 42], "c": "true"}'}, {0: 'Third row', 1: '3'}, {0: 'Pandas Row', 1: 'YOOO!'}]
-list_of_tuples = [(r[0], r[1]) for r in records]
+records = df.to_dict("records")
+list_of_tuples = [(r['Survived'], r['Pclass'], r['Name'], r['Sex'], r['Age'], r['Siblings/Spouses Aboard'], r['Parents/Children Aboard'], r['Fare']) for r in records]
 
 execute_values(cursor, insertion_query, list_of_tuples)
+
 
 #
 # QUERY THE TABLE
 #
 
 print("-------------------")
-query = f"SELECT * FROM {table_name};"
+query = f"SELECT * FROM {table_name} LIMIT 5;"
 print("SQL:", query)
 cursor.execute(query)
 for row in cursor.fetchall():
