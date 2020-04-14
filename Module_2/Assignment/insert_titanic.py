@@ -78,6 +78,6 @@ for row in cursor.fetchall():
 
 # ACTUALLY SAVE THE TRANSACTIONS
 connection.commit()
-
+# Clean up
 cursor.close()
 connection.close()

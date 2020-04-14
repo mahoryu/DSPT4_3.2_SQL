@@ -9,7 +9,7 @@ python-dotenv = "*"
 [packages]
 pandas = "*"
 psycopg2-binary = "*"
-pymongo = {extras = ["gssapi", "snappy", "srv", "tls"],version = "*"}
+pymongo = "*"
 dnspython = "*"
 
 [requires]
