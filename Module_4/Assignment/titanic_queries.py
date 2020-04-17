@@ -191,7 +191,7 @@ print(f"Perished: {results[0][1]}\n")
 query = """
 SELECT
 	*
-	, 2 * (total_passengers - distinct_names) as people_with_same_name
+	, (total_passengers - distinct_names) as people_with_same_name
 FROM
 	(SELECT
 		COUNT(DISTINCT id) as total_passengers
@@ -202,6 +202,29 @@ FROM
 cur.execute(query)
 results = cur.fetchall()
 print(f"There are {results[0][2]} passengers with the same name.\n")
+
+# Do any passengers have the same first name?
+query = """
+SELECT
+	SUM(num_occurance)
+FROM
+	(SELECT
+		COUNT(first_name) num_occurance
+		, first_name
+	FROM 
+		(SELECT
+			SUBSTRING("name" FROM '\ [A-Za-z]+') first_name
+			, "name" full_name
+		FROM titanic) as subsubquery
+
+	GROUP BY first_name
+	ORDER BY num_occurance DESC) as sub
+WHERE num_occurance > 1
+"""
+
+cur.execute(query)
+results = cur.fetchall()
+print(f"There are {results[0][0]} passengers with the same first name.\n")
 
 # How many married couples were aboard the Titanic? Assume that two people (one Mr. and one Mrs.)
 #   with the same last name and with at least 1 sibling/spouse aboard are a married couple.
