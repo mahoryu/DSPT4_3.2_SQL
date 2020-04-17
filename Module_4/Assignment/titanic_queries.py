@@ -190,25 +190,33 @@ print(f"Perished: {results[0][1]}\n")
 # Do any passengers have the same name?
 query = """
 SELECT
-	COUNT(DISTINCT id) as total_passengers
-	, COUNT(DISTINCT "name") as distinct_names
-FROM titanic
+	*
+	, 2 * (total_passengers - distinct_names) as people_with_same_name
+FROM
+	(SELECT
+		COUNT(DISTINCT id) as total_passengers
+		, COUNT(DISTINCT "name") as distinct_names
+	FROM titanic) as subquery
 """
 
 cur.execute(query)
 results = cur.fetchall()
-print(f"There are {results[0][0] - results[0][1]} passengers with the same name.\n")
+print(f"There are {results[0][2]} passengers with the same name.\n")
 
 # How many married couples were aboard the Titanic? Assume that two people (one Mr. and one Mrs.)
 #   with the same last name and with at least 1 sibling/spouse aboard are a married couple.
 query = """
 SELECT
-	COUNT(SUBSTRING("name" FROM '[A-Z][a-z]+$')) possible_couples
-	, COUNT(DISTINCT SUBSTRING("name" FROM '[A-Z][a-z]+$')) non_dups
-FROM titanic
-WHERE substring("name" FROM 'Mrs*') IS NOT NULL AND siblings_spouses_aboard > 0
+	*
+	, possible_couples - non_dups as num_couples
+FROM
+	(SELECT
+		COUNT(SUBSTRING("name" FROM '[A-Z][a-z]+$')) possible_couples
+		, COUNT(DISTINCT SUBSTRING("name" FROM '[A-Z][a-z]+$')) non_dups
+	FROM titanic
+	WHERE substring("name" FROM 'Mrs*') IS NOT NULL AND siblings_spouses_aboard > 0) AS subquery
 """
 
 cur.execute(query)
 results = cur.fetchall()
-print(f"There are {results[0][0] - results[0][1]} couples on board.")
+print(f"There are {results[0][2]} couples on board.")
